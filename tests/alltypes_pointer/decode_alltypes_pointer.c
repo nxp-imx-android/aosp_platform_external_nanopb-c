@@ -19,6 +19,7 @@ bool check_alltypes(pb_istream_t *stream, int mode)
     
     /* Fill with garbage to better detect initialization errors */
     memset(&alltypes, 0xAA, sizeof(alltypes));
+    alltypes.extensions = 0;
     
     if (!pb_decode(stream, AllTypes_fields, &alltypes))
         return false;
@@ -98,6 +99,8 @@ bool check_alltypes(pb_istream_t *stream, int mode)
         TEST(alltypes.opt_bytes         == NULL);
         TEST(alltypes.opt_submsg        == NULL);
         TEST(alltypes.opt_enum          == NULL);
+
+        TEST(alltypes.which_oneof       == 0);
     }
     else
     {
@@ -124,6 +127,10 @@ bool check_alltypes(pb_istream_t *stream, int mode)
         TEST(alltypes.opt_submsg && *alltypes.opt_submsg->substuff2 == 3056);
         TEST(alltypes.opt_enum && *alltypes.opt_enum == MyEnum_Truth);
         TEST(alltypes.opt_emptymsg);
+
+        TEST(alltypes.which_oneof == AllTypes_oneof_msg1_tag);
+        TEST(alltypes.oneof.oneof_msg1 && strcmp(alltypes.oneof.oneof_msg1->substuff1, "4059") == 0);
+        TEST(alltypes.oneof.oneof_msg1->substuff2 && *alltypes.oneof.oneof_msg1->substuff2 == 4059);
     }
     
     TEST(alltypes.req_limits->int32_min && *alltypes.req_limits->int32_min   == INT32_MIN);

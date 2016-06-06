@@ -214,12 +214,15 @@ bool check_alltypes(pb_istream_t *stream, int mode)
     int64_t     opt_sfixed64    = 3052;
     double      opt_double      = 3053.0f;
     SubMessage  opt_submsg      = {"3056", 3056};
+
+    SubMessage  oneof_msg1      = {"4059", 4059};
     
     /* Bind callbacks for required fields */
     AllTypes alltypes;
     
     /* Fill with garbage to better detect initialization errors */
     memset(&alltypes, 0xAA, sizeof(alltypes));
+    alltypes.extensions = 0;
     
     alltypes.req_int32.funcs.decode = &read_varint;
     alltypes.req_int32.arg = (void*)-1001;
@@ -391,6 +394,9 @@ bool check_alltypes(pb_istream_t *stream, int mode)
         alltypes.opt_enum.arg = (void*)MyEnum_Truth;
         
         alltypes.opt_emptymsg.funcs.decode = &read_emptymsg;
+
+        alltypes.oneof_msg1.funcs.decode = &read_submsg;
+        alltypes.oneof_msg1.arg = &oneof_msg1;
     }
     
     return pb_decode(stream, AllTypes_fields, &alltypes);

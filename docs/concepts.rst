@@ -255,6 +255,61 @@ generates this field description array for the structure *Person_PhoneNumber*::
     PB_LAST_FIELD
  };
 
+Oneof
+=====
+Protocol Buffers supports `oneof`_ sections. Here is an example of ``oneof`` usage::
+
+ message MsgType1 {
+     required int32 value = 1;
+ }
+
+ message MsgType2 {
+     required bool value = 1;
+ }
+ 
+ message MsgType3 {
+     required int32 value1 = 1;
+     required int32 value2 = 2;
+ } 
+ 
+ message MyMessage {
+     required uint32 uid = 1;
+     required uint32 pid = 2;
+     required uint32 utime = 3;
+ 
+     oneof payload {
+         MsgType1 msg1 = 4;
+         MsgType2 msg2 = 5;
+         MsgType3 msg3 = 6;
+     }
+ }
+
+Nanopb will generate ``payload`` as a C union and add an additional field ``which_payload``::
+
+  typedef struct _MyMessage {
+    uint32_t uid;
+    uint32_t pid;
+    uint32_t utime;
+    pb_size_t which_payload;
+    union {
+        MsgType1 msg1;
+        MsgType2 msg2;
+        MsgType3 msg3;
+    } payload;
+  /* @@protoc_insertion_point(struct:MyMessage) */
+  } MyMessage;
+
+``which_payload`` indicates which of the ``oneof`` fields is actually set. 
+The user is expected to set the filed manually using the correct field tag::
+
+  MyMessage msg = MyMessage_init_zero;
+  msg.payload.msg2.value = true;
+  msg.which_payload = MyMessage_msg2_tag;
+
+Notice that neither ``which_payload`` field nor the unused fileds in ``payload``
+will consume any space in the resulting encoded message.
+
+.. _`oneof`: https://developers.google.com/protocol-buffers/docs/reference/proto2-spec#oneof_and_oneof_field
 
 Extension fields
 ================
@@ -299,6 +354,25 @@ An example of this is available in *tests/test_encode_extensions.c* and
 
 .. _`extension fields`: https://developers.google.com/protocol-buffers/docs/proto#extensions
 
+Message framing
+===============
+Protocol Buffers does not specify a method of framing the messages for transmission.
+This is something that must be provided by the library user, as there is no one-size-fits-all
+solution. Typical needs for a framing format are to:
+
+1. Encode the message length.
+2. Encode the message type.
+3. Perform any synchronization and error checking that may be needed depending on application.
+
+For example UDP packets already fullfill all the requirements, and TCP streams typically only
+need a way to identify the message length and type. Lower level interfaces such as serial ports
+may need a more robust frame format, such as HDLC (high-level data link control).
+
+Nanopb provides a few helpers to facilitate implementing framing formats:
+
+1. Functions *pb_encode_delimited* and *pb_decode_delimited* prefix the message data with a varint-encoded length.
+2. Union messages and oneofs are supported in order to implement top-level container messages.
+3. Message IDs can be specified using the *(nanopb_msgopt).msgid* option and can then be accessed from the header.
 
 Return values and error handling
 ================================

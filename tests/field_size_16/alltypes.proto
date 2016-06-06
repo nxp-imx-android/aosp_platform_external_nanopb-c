@@ -1,3 +1,5 @@
+syntax = "proto2";
+
 message SubMessage {
     required string substuff1 = 1 [default = "1"];
     required int32 substuff2 = 2 [default = 2];
@@ -101,11 +103,19 @@ message AllTypes {
     optional MyEnum     opt_enum    = 10057 [default = Second];
     optional EmptyMessage opt_emptymsg = 10058;
 
+    oneof oneof
+    {
+        SubMessage oneof_msg1 = 10059;
+        EmptyMessage oneof_msg2 = 10060;
+    }
+
     // Check that extreme integer values are handled correctly
     required Limits     req_limits = 98;
 
     // Just to make sure that the size of the fields has been calculated
     // properly, i.e. otherwise a bug in last field might not be detected.
     required int32      end = 10099;
+
+    extensions 200 to 255;
 }
 

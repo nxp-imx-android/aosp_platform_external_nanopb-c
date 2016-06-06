@@ -1,4 +1,6 @@
 /* This includes the whole .c file to get access to static functions. */
+#define PB_ENABLE_MALLOC
+#include "pb_common.c"
 #include "pb_decode.c"
 
 #include <stdio.h>
@@ -85,6 +87,20 @@ int main()
               pb_decode_varint(&s, (uint64_t*)&i) && i == -1));
         TEST((s = S("\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x01"),
               pb_decode_varint(&s, &u) && u == UINT64_MAX));
+        TEST((s = S("\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x01"),
+              !pb_decode_varint(&s, &u)));
+    }
+    
+    {
+        pb_istream_t s;
+        uint32_t u;
+        
+        COMMENT("Test pb_decode_varint32");
+        TEST((s = S("\x00"), pb_decode_varint32(&s, &u) && u == 0));
+        TEST((s = S("\x01"), pb_decode_varint32(&s, &u) && u == 1));
+        TEST((s = S("\xAC\x02"), pb_decode_varint32(&s, &u) && u == 300));
+        TEST((s = S("\xFF\xFF\xFF\xFF\x0F"), pb_decode_varint32(&s, &u) && u == UINT32_MAX));
+        TEST((s = S("\xFF\xFF\xFF\xFF\xFF\x01"), !pb_decode_varint32(&s, &u)));
     }
     
     {
@@ -107,16 +123,16 @@ int main()
     }
     
     {
-        pb_istream_t s = S("\x01\xFF\xFF\x03");
+        pb_istream_t s = S("\x01\x00");
         pb_field_t f = {1, PB_LTYPE_VARINT, 0, 0, 4, 0, 0};
         uint32_t d;
         COMMENT("Test pb_dec_varint using uint32_t")
         TEST(pb_dec_varint(&s, &f, &d) && d == 1)
         
         /* Verify that no more than data_size is written. */
-        d = 0;
+        d = 0xFFFFFFFF;
         f.data_size = 1;
-        TEST(pb_dec_varint(&s, &f, &d) && (d == 0xFF || d == 0xFF000000))
+        TEST(pb_dec_varint(&s, &f, &d) && (d == 0xFFFFFF00 || d == 0x00FFFFFF))
     }
     
     {
@@ -168,7 +184,7 @@ int main()
     
     {
         pb_istream_t s;
-        struct { size_t size; uint8_t bytes[5]; } d;
+        struct { pb_size_t size; uint8_t bytes[5]; } d;
         pb_field_t f = {1, PB_LTYPE_BYTES, 0, 0, sizeof(d), 0, 0};
         
         COMMENT("Test pb_dec_bytes")
@@ -249,7 +265,7 @@ int main()
     {
         pb_istream_t s;
         CallbackArray dest;
-        struct { size_t size; uint8_t bytes[10]; } ref;
+        struct { pb_size_t size; uint8_t bytes[10]; } ref;
         dest.data.funcs.decode = &callback_check;
         dest.data.arg = &ref;
         
@@ -297,6 +313,28 @@ int main()
         TEST((s = S("\x09\x0A\x07\x0A\x05\x01\x02\x03\x04\x05"),
               pb_decode_delimited(&s, IntegerContainer_fields, &dest)) &&
               dest.submsg.data_count == 5)
+    }
+    
+    {
+        pb_istream_t s = {0};
+        void *data = NULL;
+        
+        COMMENT("Testing allocate_field")
+        TEST(allocate_field(&s, &data, 10, 10) && data != NULL);
+        TEST(allocate_field(&s, &data, 10, 20) && data != NULL);
+        
+        {
+            void *oldvalue = data;
+            size_t very_big = (size_t)-1;
+            size_t somewhat_big = very_big / 2 + 1;
+            size_t not_so_big = (size_t)1 << (4 * sizeof(size_t));
+        
+            TEST(!allocate_field(&s, &data, very_big, 2) && data == oldvalue);
+            TEST(!allocate_field(&s, &data, somewhat_big, 2) && data == oldvalue);
+            TEST(!allocate_field(&s, &data, not_so_big, not_so_big) && data == oldvalue);
+        }
+        
+        pb_free(data);
     }
     
     if (status != 0)

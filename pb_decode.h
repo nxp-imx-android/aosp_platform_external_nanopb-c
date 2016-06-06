@@ -3,8 +3,8 @@
  * field descriptions created by nanopb_generator.py.
  */
 
-#ifndef _PB_DECODE_H_
-#define _PB_DECODE_H_
+#ifndef PB_DECODE_H_INCLUDED
+#define PB_DECODE_H_INCLUDED
 
 #include "pb.h"
 
@@ -25,7 +25,7 @@ extern "C" {
  *    is different than from the main stream. Don't use bytes_left to compute
  *    any pointers.
  */
-struct _pb_istream_t
+struct pb_istream_s
 {
 #ifdef PB_BUFFER_ONLY
     /* Callback pointer is not used in buffer-only configuration.
@@ -34,7 +34,7 @@ struct _pb_istream_t
      */
     int *callback;
 #else
-    bool (*callback)(pb_istream_t *stream, uint8_t *buf, size_t count);
+    bool (*callback)(pb_istream_t *stream, pb_byte_t *buf, size_t count);
 #endif
 
     void *state; /* Free field for use by callback implementation */
@@ -103,12 +103,12 @@ void pb_release(const pb_field_t fields[], void *dest_struct);
  * Alternatively, you can use a custom stream that reads directly from e.g.
  * a file or a network socket.
  */
-pb_istream_t pb_istream_from_buffer(uint8_t *buf, size_t bufsize);
+pb_istream_t pb_istream_from_buffer(const pb_byte_t *buf, size_t bufsize);
 
 /* Function to read from a pb_istream_t. You can use this if you need to
  * read some custom header data, or to read data in field callbacks.
  */
-bool pb_read(pb_istream_t *stream, uint8_t *buf, size_t count);
+bool pb_read(pb_istream_t *stream, pb_byte_t *buf, size_t count);
 
 
 /************************************************

@@ -19,10 +19,12 @@
    the decoding and checks the fields. */
 bool check_alltypes(pb_istream_t *stream, int mode)
 {
-    AllTypes alltypes;
+    /* Uses _init_default to just make sure that it works. */
+    AllTypes alltypes = AllTypes_init_default;
     
     /* Fill with garbage to better detect initialization errors */
     memset(&alltypes, 0xAA, sizeof(alltypes));
+    alltypes.extensions = 0;
     
     if (!pb_decode(stream, AllTypes_fields, &alltypes))
         return false;
@@ -123,6 +125,8 @@ bool check_alltypes(pb_istream_t *stream, int mode)
         TEST(alltypes.has_opt_enum     == false);
         TEST(alltypes.opt_enum == MyEnum_Second);
         TEST(alltypes.has_opt_emptymsg == false);
+
+        TEST(alltypes.which_oneof == 0);
     }
     else
     {
@@ -168,6 +172,10 @@ bool check_alltypes(pb_istream_t *stream, int mode)
         TEST(alltypes.has_opt_enum      == true);
         TEST(alltypes.opt_enum == MyEnum_Truth);
         TEST(alltypes.has_opt_emptymsg  == true);
+
+        TEST(alltypes.which_oneof == AllTypes_oneof_msg1_tag);
+        TEST(strcmp(alltypes.oneof.oneof_msg1.substuff1, "4059") == 0);
+        TEST(alltypes.oneof.oneof_msg1.substuff2 == 4059);
     }
     
     TEST(alltypes.req_limits.int32_min  == INT32_MIN);
