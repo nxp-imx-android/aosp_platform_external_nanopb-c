@@ -21,6 +21,7 @@ IGNORED_WARNINGS := -Wno-sign-compare -Wno-unused-parameter
 # nanopb_c library
 # =======================================================
 nanopb_c_src_files := \
+    pb_common.c \
     pb_decode.c \
     pb_encode.c
 
