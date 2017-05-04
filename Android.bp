@@ -30,11 +30,13 @@ cc_defaults {
 
 cc_library_static {
     name: "libprotobuf-c-nano",
+    vendor_available: true,
     defaults: ["libprotobuf-c-nano-defaults"],
 }
 
 cc_library_static {
     name: "libprotobuf-c-nano-enable_malloc",
+    vendor_available: true,
     defaults: ["libprotobuf-c-nano-defaults"],
 
     cflags: ["-DPB_ENABLE_MALLOC"],
