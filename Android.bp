@@ -23,6 +23,7 @@ cc_defaults {
         "-Wno-unused-parameter",
     ],
     srcs: [
+        "pb_common.c",
         "pb_decode.c",
         "pb_encode.c",
     ],
