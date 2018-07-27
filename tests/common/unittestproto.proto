@@ -1,5 +1,3 @@
-syntax = "proto2";
-
 import 'nanopb.proto';
 
 message IntegerArray {
@@ -36,8 +34,3 @@ message CallbackContainer {
 message CallbackContainerContainer {
     required CallbackContainer submsg = 1;
 }
-
-message StringPointerContainer {
-    repeated string rep_str = 1 [(nanopb).type = FT_POINTER];
-}
-
