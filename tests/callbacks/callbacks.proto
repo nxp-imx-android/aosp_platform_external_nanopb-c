@@ -1,5 +1,3 @@
-syntax = "proto2";
-
 message SubMessage {
     optional string stringvalue = 1;
     repeated int32 int32value = 2;
