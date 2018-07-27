@@ -1,18 +1,25 @@
+Nanopb - Protocol Buffers for Embedded Systems
+==============================================
+
+[![Build Status](https://travis-ci.org/nanopb/nanopb.svg?branch=master)](https://travis-ci.org/nanopb/nanopb)
+
 Nanopb is a small code-size Protocol Buffers implementation in ansi C. It is
 especially suitable for use in microcontrollers, but fits any memory
 restricted system.
 
-Homepage: http://kapsi.fi/~jpa/nanopb/
-
+* **Homepage:** https://jpa.kapsi.fi/nanopb/
+* **Documentation:** https://jpa.kapsi.fi/nanopb/docs/
+* **Downloads:** https://jpa.kapsi.fi/nanopb/download/
+* **Forum:** https://groups.google.com/forum/#!forum/nanopb
 
 
 
 Using the nanopb library
-========================
+------------------------
 To use the nanopb library, you need to do two things:
 
-1) Compile your .proto files for nanopb, using protoc.
-2) Include pb_encode.c and pb_decode.c in your project.
+1. Compile your .proto files for nanopb, using protoc.
+2. Include pb_encode.c, pb_decode.c and pb_common.c in your project.
 
 The easiest way to get started is to study the project in "examples/simple".
 It contains a Makefile, which should work directly under most Linux systems.
@@ -22,7 +29,7 @@ README.txt in that folder.
 
 
 Using the Protocol Buffers compiler (protoc)
-============================================
+--------------------------------------------
 The nanopb generator is implemented as a plugin for the Google's own protoc
 compiler. This has the advantage that there is no need to reimplement the
 basic parsing of .proto files. However, it does mean that you need the
@@ -46,7 +53,7 @@ protoc, you need to manually give the path to nanopb generator:
 
 
 Running the tests
-=================
+-----------------
 If you want to perform further development of the nanopb core, or to verify
 its functionality using your compiler and platform, you'll want to run the
 test suite. The build rules for the test suite are implemented using Scons,
@@ -58,4 +65,7 @@ so you need to have that installed. To run the tests:
 This will show the progress of various test cases. If the output does not
 end in an error, the test cases were successful.
 
-
+Note: Mac OS X by default aliases 'clang' as 'gcc', while not actually
+supporting the same command line options as gcc does. To run tests on
+Mac OS X, use: "scons CC=clang CXX=clang". Same way can be used to run
+tests with different compilers on any platform.
