@@ -1,5 +1,4 @@
 /* This includes the whole .c file to get access to static functions. */
-#include "pb_common.c"
 #include "pb_encode.c"
 
 #include <stdio.h>
@@ -170,7 +169,7 @@ int main()
     {
         uint8_t buffer[30];
         pb_ostream_t s;
-        struct { pb_size_t size; uint8_t bytes[5]; } value = {5, {'x', 'y', 'z', 'z', 'y'}};
+        struct { size_t size; uint8_t bytes[5]; } value = {5, {'x', 'y', 'z', 'z', 'y'}};
     
         COMMENT("Test pb_enc_bytes")
         TEST(WRITES(pb_enc_bytes(&s, &BytesMessage_fields[0], &value), "\x05xyzzy"))
@@ -329,23 +328,6 @@ int main()
 
         TEST(pb_encode(&s, StringMessage_fields, &msg));
         TEST(s.bytes_written == StringMessage_size);
-    }
-    
-    {
-        uint8_t buffer[128];
-        pb_ostream_t s;
-        StringPointerContainer msg = StringPointerContainer_init_zero;
-        char *strs[1] = {NULL};
-        char zstr[] = "Z";
-        
-        COMMENT("Test string pointer encoding.");
-        
-        msg.rep_str = strs;
-        msg.rep_str_count = 1;
-        TEST(WRITES(pb_encode(&s, StringPointerContainer_fields, &msg), "\x0a\x00"))
-        
-        strs[0] = zstr;
-        TEST(WRITES(pb_encode(&s, StringPointerContainer_fields, &msg), "\x0a\x01Z"))
     }
     
     if (status != 0)

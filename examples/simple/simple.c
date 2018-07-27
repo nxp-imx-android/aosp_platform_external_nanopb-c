@@ -15,11 +15,8 @@ int main()
         /* Allocate space on the stack to store the message data.
          *
          * Nanopb generates simple struct definitions for all the messages.
-         * - check out the contents of simple.pb.h!
-         * It is a good idea to always initialize your structures
-         * so that you do not have garbage data from RAM in there.
-         */
-        SimpleMessage message = SimpleMessage_init_zero;
+         * - check out the contents of simple.pb.h! */
+        SimpleMessage message;
         
         /* Create a stream that will write to our buffer. */
         pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
@@ -47,7 +44,7 @@ int main()
     
     {
         /* Allocate space for the decoded message. */
-        SimpleMessage message = SimpleMessage_init_zero;
+        SimpleMessage message;
         
         /* Create a stream that reads from the buffer. */
         pb_istream_t stream = pb_istream_from_buffer(buffer, message_length);
@@ -63,7 +60,7 @@ int main()
         }
         
         /* Print the data contained in the message. */
-        printf("Your lucky number was %d!\n", (int)message.lucky_number);
+        printf("Your lucky number was %d!\n", message.lucky_number);
     }
     
     return 0;

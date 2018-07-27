@@ -1,5 +1,3 @@
-syntax = "proto2";
-
 import 'nanopb.proto';
 import 'messages1.proto';
 
