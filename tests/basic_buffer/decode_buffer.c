@@ -16,7 +16,7 @@
 bool print_person(pb_istream_t *stream)
 {
     int i;
-    Person person = Person_init_zero;
+    Person person;
     
     if (!pb_decode(stream, Person_fields, &person))
         return false;

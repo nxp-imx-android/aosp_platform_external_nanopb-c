@@ -70,15 +70,11 @@ static bool read_string(pb_istream_t *stream, const pb_field_t *field, void **ar
 static bool read_submsg(pb_istream_t *stream, const pb_field_t *field, void **arg)
 {
     SubMessage submsg = {""};
-    SubMessage *ref = *arg;
     
     if (!pb_decode(stream, SubMessage_fields, &submsg))
         return false;
     
-    TEST(strcmp(submsg.substuff1, ref->substuff1) == 0);
-    TEST(submsg.substuff2 == ref->substuff2);
-    TEST(submsg.has_substuff3 == ref->has_substuff3);
-    TEST(submsg.substuff3 == ref->substuff3); 
+    TEST(memcmp(&submsg, *arg, sizeof(submsg)));
     return true;
 }
 
@@ -148,16 +144,11 @@ static bool read_repeated_string(pb_istream_t *stream, const pb_field_t *field, 
 static bool read_repeated_submsg(pb_istream_t *stream, const pb_field_t *field, void **arg)
 {
     SubMessage** expected = (SubMessage**)arg;
-    SubMessage submsg = {""};
-    if (!pb_decode(stream, SubMessage_fields, &submsg))
+    SubMessage decoded = {""};
+    if (!pb_decode(stream, SubMessage_fields, &decoded))
         return false;
 
-    TEST(strcmp(submsg.substuff1, (*expected)->substuff1) == 0);
-    TEST(submsg.substuff2 == (*expected)->substuff2);
-    TEST(submsg.has_substuff3 == (*expected)->has_substuff3);
-    TEST(submsg.substuff3 == (*expected)->substuff3);
-    (*expected)++;
-
+    TEST(memcmp((*expected)++, &decoded, sizeof(decoded)) == 0);
     return true;
 }
 
@@ -186,14 +177,13 @@ static bool read_limits(pb_istream_t *stream, const pb_field_t *field, void **ar
 bool check_alltypes(pb_istream_t *stream, int mode)
 {
     /* Values for use from callbacks through pointers. */
-    bool status;
     uint32_t    req_fixed32     = 1008;
     int32_t     req_sfixed32    = -1009;
     float       req_float       = 1010.0f;
     uint64_t    req_fixed64     = 1011;
     int64_t     req_sfixed64    = -1012;
     double      req_double      = 1013.0;
-    SubMessage  req_submsg      = {"1016", 1016, false, 3};
+    SubMessage  req_submsg      = {"1016", 1016};
     
     int32_t     rep_int32[5]    = {0, 0, 0, 0, -2001};
     int32_t     rep_int64[5]    = {0, 0, 0, 0, -2002};
@@ -223,12 +213,13 @@ bool check_alltypes(pb_istream_t *stream, int mode)
     uint64_t    opt_fixed64     = 3051;
     int64_t     opt_sfixed64    = 3052;
     double      opt_double      = 3053.0f;
-    SubMessage  opt_submsg      = {"3056", 3056, false, 3};
-
-    SubMessage  oneof_msg1      = {"4059", 4059, false, 3};
+    SubMessage  opt_submsg      = {"3056", 3056};
     
     /* Bind callbacks for required fields */
-    AllTypes alltypes = AllTypes_init_zero;
+    AllTypes alltypes;
+    
+    /* Fill with garbage to better detect initialization errors */
+    memset(&alltypes, 0xAA, sizeof(alltypes));
     
     alltypes.req_int32.funcs.decode = &read_varint;
     alltypes.req_int32.arg = (void*)-1001;
@@ -400,19 +391,9 @@ bool check_alltypes(pb_istream_t *stream, int mode)
         alltypes.opt_enum.arg = (void*)MyEnum_Truth;
         
         alltypes.opt_emptymsg.funcs.decode = &read_emptymsg;
-
-        alltypes.oneof_msg1.funcs.decode = &read_submsg;
-        alltypes.oneof_msg1.arg = &oneof_msg1;
     }
     
-    status = pb_decode(stream, AllTypes_fields, &alltypes);
-    
-#ifdef PB_ENABLE_MALLOC
-    /* Just to check for any interference between pb_release() and callback fields */
-    pb_release(AllTypes_fields, &alltypes);
-#endif
-
-    return status;
+    return pb_decode(stream, AllTypes_fields, &alltypes);
 }
 
 int main(int argc, char **argv)

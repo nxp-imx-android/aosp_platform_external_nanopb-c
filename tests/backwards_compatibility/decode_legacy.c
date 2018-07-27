@@ -22,7 +22,10 @@
    the decoding and checks the fields. */
 bool check_alltypes(pb_istream_t *stream, int mode)
 {
-    AllTypes alltypes = {0};
+    AllTypes alltypes;
+    
+    /* Fill with garbage to better detect initialization errors */
+    memset(&alltypes, 0xAA, sizeof(alltypes));
     
     if (!pb_decode(stream, AllTypes_fields, &alltypes))
         return false;
