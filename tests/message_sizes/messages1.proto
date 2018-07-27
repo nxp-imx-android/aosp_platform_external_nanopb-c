@@ -1,5 +1,3 @@
-syntax = "proto2";
-
 enum MessageStatus {
     FAIL = 0;
     OK = 1;

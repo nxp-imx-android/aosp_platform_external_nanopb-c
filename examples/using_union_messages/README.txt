@@ -17,9 +17,6 @@ we actually want. Similarly when decoding, we can manually read the tag of
 the top level message, and only then allocate the memory for the submessage
 after we already know its type.
 
-NOTE: There is a newer protobuf feature called `oneof` that is also supported
-by nanopb. It might be a better option for new code.
-
 
 Example usage
 -------------
