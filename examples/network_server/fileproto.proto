@@ -2,8 +2,6 @@
 //
 // See also the nanopb-specific options in fileproto.options.
 
-syntax = "proto2";
-
 message ListFilesRequest {
     optional string path = 1 [default = "/"];
 }
